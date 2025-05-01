@@ -53,14 +53,9 @@ def generate_tld_query(tld_count=50):
 | summarize count() by RecipientEmailAddress, SenderFromAddress, Subject
 | order by count_ desc"""
 
-        output = {
-            "date": datetime.now().strftime("%Y-%m-%d"),
-            "tlds": tlds,
-            "query": query
-        }
-
-        with open("tld_query.json", "w") as f:
-            json.dump(output, f, indent=2)
+        # Save the query to a .txt file
+        with open("tld_query.txt", "w") as f:
+            f.write(query)
             
     except requests.exceptions.RequestException as e:
         print(f"Error making request: {e}")
