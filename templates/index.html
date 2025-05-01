@@ -115,19 +115,19 @@
         <div class="row mb-4">
             <div class="col-md-6">
                 <div class="card stat-card">
-                    <div class="card-body text-center">
-                        <div class="stat-icon mb-3">🌐</div>
-                        <div class="stat-number">{{ stats.total_domains }}</div>
-                        <div class="stat-label">Total Domains</div>
+                    <div class="card-body text-center p-2">
+                        <div class="stat-icon mb-1" style="font-size: 1.2rem;">🌐</div>
+                        <div class="stat-number" style="font-size: 1.5rem;">{{ stats.total_domains }}</div>
+                        <div class="stat-label" style="font-size: 0.8rem;">Total Domains</div>
                     </div>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="card stat-card">
-                    <div class="card-body text-center">
-                        <div class="stat-icon mb-3">📊</div>
-                        <div class="stat-number">{{ top_ports|length }}</div>
-                        <div class="stat-label">Total Ports</div>
+                    <div class="card-body text-center p-2">
+                        <div class="stat-icon mb-1" style="font-size: 1.2rem;">📊</div>
+                        <div class="stat-number" style="font-size: 1.5rem;">{{ top_ports|length }}</div>
+                        <div class="stat-label" style="font-size: 0.8rem;">Total Ports</div>
                     </div>
                 </div>
             </div>
@@ -140,10 +140,13 @@
                     <span>Top TLDs</span>
                     <div class="d-flex align-items-center">
                         <input type="number" id="tldLimit" class="form-control form-control-sm me-2" 
-                               style="width: 80px;" min="5" max="50" value="{{ tld_limit }}"
+                               style="width: 80px;" min="5" max="100" value="{{ tld_limit }}"
                                onkeypress="if(event.key === 'Enter') { event.preventDefault(); updateTldLimit(this.value); }"
                                onblur="updateTldLimit(this.value)">
                         <span class="badge bg-primary">{{ stats.top_tlds|length }}</span>
+                        <button class="btn btn-sm btn-outline-primary ms-2" onclick="generateDefenderQuery()">
+                            <i class="bi bi-shield-check"></i> Generate Defender Query
+                        </button>
                     </div>
                 </h5>
                 <div class="d-flex flex-wrap">
@@ -312,7 +315,7 @@
         }
 
         function updateTldLimit(limit) {
-            if (limit >= 5 && limit <= 50) {
+            if (limit >= 5 && limit <= 100) {
                 const url = new URL(window.location.href);
                 url.searchParams.set('tld_limit', limit);
                 window.location.href = url.toString();
@@ -320,6 +323,52 @@
                 // Reset to current value if invalid
                 document.getElementById('tldLimit').value = {{ tld_limit }};
             }
+        }
+
+        function generateDefenderQuery() {
+            const tlds = Array.from(document.querySelectorAll('.tld-badge')).map(badge => {
+                return badge.textContent.trim().split(' ')[0].substring(1); // Remove the dot and get just the TLD
+            });
+            
+            const query = `EmailEvents
+| where RecipientEmailAddress endswith (${tlds.map(tld => `".${tld}"`).join(' or ')})
+| summarize count() by RecipientEmailAddress, SenderFromAddress, Subject
+| order by count_ desc`;
+            
+            // Create a modal to display the query
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.id = 'defenderQueryModal';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Microsoft Defender Hunting Query</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <pre class="bg-light p-3 rounded"><code>${query}</code></pre>
+                            <button class="btn btn-primary" onclick="copyQuery()">Copy Query</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const modalInstance = new bootstrap.Modal(modal);
+            modalInstance.show();
+            
+            // Remove modal from DOM after it's hidden
+            modal.addEventListener('hidden.bs.modal', function () {
+                document.body.removeChild(modal);
+            });
+        }
+        
+        function copyQuery() {
+            const query = document.querySelector('#defenderQueryModal pre code').textContent;
+            navigator.clipboard.writeText(query).then(() => {
+                alert('Query copied to clipboard!');
+            });
         }
     </script>
 </body>

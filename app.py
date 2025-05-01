@@ -135,7 +135,7 @@ def get_pagination_range(current_page, total_pages, window=5):
 def index():
     page = request.args.get('page', 1, type=int)
     port_limit = request.args.get('port_limit', 100, type=int)
-    tld_limit = request.args.get('tld_limit', 10, type=int)
+    tld_limit = request.args.get('tld_limit', 50, type=int)
     data = fetch_sans_data()
     top_ips = fetch_top_ips()
     top_ports = fetch_top_ports(port_limit)
@@ -175,7 +175,7 @@ def search():
     firstseen_filter = request.args.get('firstseen', '').lower()
     page = request.args.get('page', 1, type=int)
     port_limit = request.args.get('port_limit', 100, type=int)
-    tld_limit = request.args.get('tld_limit', 10, type=int)
+    tld_limit = request.args.get('tld_limit', 50, type=int)
     
     # Get all data
     data = fetch_sans_data()
