@@ -30,29 +30,7 @@ jobs:
         
     - name: Generate Query
       run: |
-        echo 'import requests
-import json
-import sys
-from datetime import datetime
-
-tld_count = int(sys.argv[1]) if len(sys.argv) > 1 else 50
-response = requests.get(f"https://isc.sans.edu/api/domaintop/{tld_count}?json")
-data = response.json()
-tlds = [item["domain"].split(".")[-1] for item in data]
-query = f"""EmailEvents
-| where RecipientEmailAddress endswith ({' or '.join(f'"{tld}"' for tld in tlds)})
-| summarize count() by RecipientEmailAddress, SenderFromAddress, Subject
-| order by count_ desc"""
-
-output = {
-    "date": datetime.now().strftime("%Y-%m-%d"),
-    "tlds": tlds,
-    "query": query
-}
-
-with open("tld_query.json", "w") as f:
-    json.dump(output, f, indent=2)' > generate_query.py
-        python generate_query.py ${{ github.event.inputs.tld_count }}
+        python scripts/generate_tld_query.py ${{ github.event.inputs.tld_count }}
         
     - name: Commit and push if changed
       run: |
