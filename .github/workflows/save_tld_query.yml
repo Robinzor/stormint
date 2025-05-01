@@ -2,8 +2,8 @@ name: Save TLD Query
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # Run daily at midnight
-  workflow_dispatch:      # Allow manual triggering
+    - cron: '0 0 * * *'
+  workflow_dispatch:
 
 jobs:
   save-tld-query:
@@ -24,32 +24,7 @@ jobs:
         
     - name: Save TLD Query
       run: |
-        python -c "
-        import requests
-        import json
-        from datetime import datetime
-        
-        # Get data from SANS API
-        response = requests.get('https://isc.sans.edu/api/domaintop/50?json')
-        data = response.json()
-        
-        # Format the query
-        tlds = [item['domain'].split('.')[-1] for item in data]
-        query = f\"\"\"EmailEvents
-| where RecipientEmailAddress endswith ({' or '.join(f'\"{tld}\"' for tld in tlds)})
-| summarize count() by RecipientEmailAddress, SenderFromAddress, Subject
-| order by count_ desc\"\"\"
-        
-        # Save to file
-        output = {
-            'date': datetime.now().strftime('%Y-%m-%d'),
-            'tlds': tlds,
-            'query': query
-        }
-        
-        with open('tld_query.json', 'w') as f:
-            json.dump(output, f, indent=2)
-        "
+        python -c "import requests;import json;from datetime import datetime;response=requests.get('https://isc.sans.edu/api/domaintop/50?json');data=response.json();tlds=[item['domain'].split('.')[-1] for item in data];query=f\"\"\"EmailEvents|where RecipientEmailAddress endswith ({' or '.join(f'\"{tld}\"' for tld in tlds)})|summarize count() by RecipientEmailAddress, SenderFromAddress, Subject|order by count_ desc\"\"\";output={'date':datetime.now().strftime('%Y-%m-%d'),'tlds':tlds,'query':query};with open('tld_query.json','w') as f:json.dump(output,f,indent=2)"
         
     - name: Commit and push if changed
       run: |
