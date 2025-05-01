@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StormInt - SANS Domain Analysis</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .main-content {
+            flex: 1;
+        }
+        .footer {
+            background: #f8f9fa;
+            padding: 1rem 0;
+            margin-top: auto;
+            min-height: 70vh;
+        }
+        .stat-card {
+            transition: transform 0.2s;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .stat-label {
+            font-size: 1rem;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .stat-icon {
+            font-size: 2rem;
+            color: #3498db;
+        }
+        .table-container {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .table thead th {
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 1;
+        }
+        .tld-badge {
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+            margin: 0.2rem;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+        }
+        .tld-count {
+            font-weight: bold;
+            color: #3498db;
+        }
+        .filter-input {
+            width: 100%;
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+        }
+        .filter-input:focus {
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+        }
+        .footer-card {
+            margin-bottom: 0;
+            border-radius: 0;
+            height: 100%;
+        }
+        .card-body {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .table-wrapper {
+            flex: 1;
+            overflow: hidden;
+        }
+        .chart-container {
+            position: relative;
+            height: 120px;
+            width: 100%;
+        }
+        .tld-section {
+            padding: 0.5rem;
+        }
+        .chart-legend {
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4 main-content">
+        <h1 class="text-center mb-4">StormInt</h1>
+        
+        <!-- Stats Overview -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card stat-card">
+                    <div class="card-body text-center">
+                        <div class="stat-icon mb-3">🌐</div>
+                        <div class="stat-number">{{ stats.total_domains }}</div>
+                        <div class="stat-label">Total Domains</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card stat-card">
+                    <div class="card-body text-center">
+                        <div class="stat-icon mb-3">📊</div>
+                        <div class="stat-number">{{ top_ports|length }}</div>
+                        <div class="stat-label">Total Ports</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TLD Stats -->
+        <div class="card stat-card mb-4">
+            <div class="card-body tld-section">
+                <h5 class="card-title d-flex justify-content-between align-items-center mb-2">
+                    <span>Top TLDs</span>
+                    <div class="d-flex align-items-center">
+                        <input type="number" id="tldLimit" class="form-control form-control-sm me-2" 
+                               style="width: 80px;" min="5" max="50" value="{{ tld_limit }}"
+                               onkeypress="if(event.key === 'Enter') { event.preventDefault(); updateTldLimit(this.value); }"
+                               onblur="updateTldLimit(this.value)">
+                        <span class="badge bg-primary">{{ stats.top_tlds|length }}</span>
+                    </div>
+                </h5>
+                <div class="d-flex flex-wrap">
+                    {% for tld, count in stats.top_tlds.items() %}
+                    <div class="tld-badge">
+                        .{{ tld }} <span class="tld-count">{{ count }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer with Tables -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <!-- Domains Column -->
+                <div class="col-md-6">
+                    <div class="card footer-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Recent Domains</h5>
+                            <div class="table-wrapper">
+                                <div class="table-container">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>
+                                                    <input type="text" class="filter-input" placeholder="Filter Domain..." 
+                                                           value="{{ request.args.get('domain', '') }}"
+                                                           onchange="updateFilter('domain', this.value)">
+                                                </th>
+                                                <th>
+                                                    <input type="text" class="filter-input" placeholder="Filter IP..." 
+                                                           value="{{ request.args.get('ip', '') }}"
+                                                           onchange="updateFilter('ip', this.value)">
+                                                </th>
+                                                <th>
+                                                    <input type="text" class="filter-input" placeholder="Filter Type..." 
+                                                           value="{{ request.args.get('type', '') }}"
+                                                           onchange="updateFilter('type', this.value)">
+                                                </th>
+                                                <th>
+                                                    <input type="text" class="filter-input" placeholder="Filter First Seen..." 
+                                                           value="{{ request.args.get('firstseen', '') }}"
+                                                           onchange="updateFilter('firstseen', this.value)">
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in raw_data %}
+                                            <tr>
+                                                <td>{{ item.domainname }}</td>
+                                                <td>{{ item.ip }}</td>
+                                                <td>{{ item.type }}</td>
+                                                <td>{{ item.firstseen }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            {% if total_pages > 1 %}
+                            <nav aria-label="Page navigation" class="mt-3">
+                                <ul class="pagination justify-content-center">
+                                    {% if current_page > 1 %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('search', page=current_page-1, port_limit=port_limit, tld_limit=tld_limit, domain=request.args.get('domain', ''), ip=request.args.get('ip', ''), type=request.args.get('type', ''), firstseen=request.args.get('firstseen', '')) }}">Previous</a>
+                                    </li>
+                                    {% endif %}
+                                    
+                                    {% if pagination_range[0] > 1 %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('search', page=1, port_limit=port_limit, tld_limit=tld_limit, domain=request.args.get('domain', ''), ip=request.args.get('ip', ''), type=request.args.get('type', ''), firstseen=request.args.get('firstseen', '')) }}">1</a>
+                                    </li>
+                                    {% if pagination_range[0] > 2 %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                    {% endif %}
+                                    {% endif %}
+                                    
+                                    {% for page_num in pagination_range %}
+                                    <li class="page-item {% if page_num == current_page %}active{% endif %}">
+                                        <a class="page-link" href="{{ url_for('search', page=page_num, port_limit=port_limit, tld_limit=tld_limit, domain=request.args.get('domain', ''), ip=request.args.get('ip', ''), type=request.args.get('type', ''), firstseen=request.args.get('firstseen', '')) }}">{{ page_num }}</a>
+                                    </li>
+                                    {% endfor %}
+                                    
+                                    {% if pagination_range[-1] < total_pages %}
+                                    {% if pagination_range[-1] < total_pages - 1 %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                    {% endif %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('search', page=total_pages, port_limit=port_limit, tld_limit=tld_limit, domain=request.args.get('domain', ''), ip=request.args.get('ip', ''), type=request.args.get('type', ''), firstseen=request.args.get('firstseen', '')) }}">{{ total_pages }}</a>
+                                    </li>
+                                    {% endif %}
+                                    
+                                    {% if current_page < total_pages %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('search', page=current_page+1, port_limit=port_limit, tld_limit=tld_limit, domain=request.args.get('domain', ''), ip=request.args.get('ip', ''), type=request.args.get('type', ''), firstseen=request.args.get('firstseen', '')) }}">Next</a>
+                                    </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ports Column -->
+                <div class="col-md-6">
+                    <div class="card footer-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Top Ports</h5>
+                            <div class="table-container">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Rank</th>
+                                            <th>Port</th>
+                                            <th>Records</th>
+                                            <th>Targets</th>
+                                            <th>Sources</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for port in top_ports %}
+                                        <tr>
+                                            <td>{{ port.rank }}</td>
+                                            <td>{{ port.port }}</td>
+                                            <td>{{ "{:,}".format(port.records) }}</td>
+                                            <td>{{ "{:,}".format(port.targets) }}</td>
+                                            <td>{{ "{:,}".format(port.sources) }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function updateFilter(field, value) {
+            const url = new URL(window.location.href);
+            url.searchParams.set(field, value);
+            url.searchParams.set('page', '1'); // Reset to first page when filtering
+            window.location.href = url.toString();
+        }
+
+        function updatePortLimit(limit) {
+            if (limit >= 10 && limit <= 65535) {
+                const url = new URL(window.location.href);
+                url.searchParams.set('port_limit', limit);
+                window.location.href = url.toString();
+            } else {
+                // Reset to current value if invalid
+                document.getElementById('portLimit').value = {{ port_limit }};
+            }
+        }
+
+        function updateTldLimit(limit) {
+            if (limit >= 5 && limit <= 50) {
+                const url = new URL(window.location.href);
+                url.searchParams.set('tld_limit', limit);
+                window.location.href = url.toString();
+            } else {
+                // Reset to current value if invalid
+                document.getElementById('tldLimit').value = {{ tld_limit }};
+            }
+        }
+    </script>
+</body>
+</html> 
