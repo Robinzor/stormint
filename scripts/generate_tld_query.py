@@ -24,41 +24,41 @@ def generate_tld_query(tld_count=50):
         }
         
         while retry_count < max_retries:
+            start_time = time.time()
             response = requests.get(url, headers=headers)
-            print(f"Response status code: {response.status_code}")
-            print(f"Response headers: {response.headers}")
+            elapsed_time = time.time() - start_time
             
-            # Check if we got JSON
-            if 'application/json' in response.headers.get('content-type', ''):
-                break
+            print(f"Response status code: {response.status_code}")
+            print(f"Response headers: {dict(response.headers)}")
+            print(f"Request took {elapsed_time:.2f} seconds")
+            
+            # Try to parse the response regardless of content-type
+            try:
+                # Wait if response was too quick
+                if elapsed_time < 10:
+                    wait_time = 10 - elapsed_time
+                    print(f"Response was too quick, waiting {wait_time:.2f} more seconds...")
+                    time.sleep(wait_time)
                 
-            # If we got HTML, wait longer and retry
-            print(f"Received non-JSON response (attempt {retry_count + 1}/{max_retries})")
-            print("Waiting 20 seconds before retrying...")
-            time.sleep(20)
-            retry_count += 1
+                # Try to parse the response
+                data = response.json()
+                if data:
+                    print("Successfully parsed JSON response")
+                    break
+                else:
+                    print("Empty JSON response")
+            except json.JSONDecodeError:
+                print(f"Failed to parse JSON (attempt {retry_count + 1}/{max_retries})")
+                print(f"Response preview: {response.text[:200]}...")
+                
+                # If we got HTML, wait longer and retry
+                print("Waiting 20 seconds before retrying...")
+                time.sleep(20)
+                retry_count += 1
+                continue
         
         if retry_count == max_retries:
             print("Max retries reached. Could not get JSON response.")
-            return
-            
-        response.raise_for_status()
-        
-        # Check if response is empty or not valid JSON
-        if not response.text.strip():
-            print("Error: Empty response from API")
-            return
-            
-        print(f"Response text preview: {response.text[:200]}...")
-            
-        try:
-            data = response.json()
-        except json.JSONDecodeError:
-            print(f"Error: Invalid JSON response. Response text: {response.text[:200]}...")
-            return
-            
-        if not data:
-            print("Error: No data returned from API")
             return
             
         # Extract TLDs and count their occurrences
