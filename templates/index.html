@@ -113,28 +113,42 @@
         
         <!-- Stats Overview -->
         <div class="row mb-4">
-            <div class="col-md-6">
-                <div class="card stat-card">
-                    <div class="card-body text-center p-2">
-                        <div class="stat-icon mb-1" style="font-size: 1.2rem;">🌐</div>
-                        <div class="stat-number" style="font-size: 1.5rem;">{{ stats.total_domains }}</div>
+            <div class="col-md-4">
+                <div class="card stat-card h-100">
+                    <div class="card-body text-center p-1">
+                        <div class="stat-number" style="font-size: 1.5rem; padding-top: 0.2rem;">{{ stats.total_domains }}</div>
                         <div class="stat-label" style="font-size: 0.8rem;">Total Domains</div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="card stat-card">
-                    <div class="card-body text-center p-2">
-                        <div class="stat-icon mb-1" style="font-size: 1.2rem;">📊</div>
-                        <div class="stat-number" style="font-size: 1.5rem;">{{ top_ports|length }}</div>
+            <div class="col-md-4">
+                <div class="card stat-card h-100">
+                    <div class="card-body text-center p-1">
+                        <div class="stat-number" style="font-size: 1.5rem; padding-top: 0.2rem;">{{ top_ports|length }}</div>
                         <div class="stat-label" style="font-size: 0.8rem;">Total Ports</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card stat-card h-100">
+                    <div class="card-body text-center p-1">
+                        <div class="stat-number" style="font-size: 0.8rem; line-height: 1.2; padding: 0.5rem 0;">
+                            <div class="d-flex flex-wrap justify-content-center gap-1">
+                                <span style="font-size: 0.8rem;">Cloudflare</span>
+                                <span style="font-size: 0.8rem;">None</span>
+                                <span style="font-size: 0.8rem;">Unknown</span>
+                                <span style="font-size: 0.8rem;">Wix</span>
+                                <span style="font-size: 0.8rem;">Redirect</span>
+                            </div>
+                        </div>
+                        <div class="stat-label" style="font-size: 0.8rem;">Domain Filter Types</div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- TLD Stats -->
-        <div class="card stat-card mb-4">
+        <div class="card stat-card mb-2">
             <div class="card-body tld-section">
                 <h5 class="card-title d-flex justify-content-between align-items-center mb-2">
                     <span>Top TLDs</span>
