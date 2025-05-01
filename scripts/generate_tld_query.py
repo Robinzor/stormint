@@ -1,17 +1,38 @@
 import requests
 import json
 import sys
+import time
 from datetime import datetime
 
 def generate_tld_query(tld_count=50):
     try:
-        response = requests.get(f"https://isc.sans.edu/api/domaintop/{tld_count}?json")
-        response.raise_for_status()  # Raise an exception for bad status codes
+        url = f"https://isc.sans.edu/api/domaintop/{tld_count}?json"
+        print(f"Making request to: {url}")
+        
+        # Add a delay before the first request
+        print("Waiting 5 seconds before making request...")
+        time.sleep(5)
+        
+        response = requests.get(url)
+        print(f"Response status code: {response.status_code}")
+        print(f"Response headers: {response.headers}")
+        
+        # If we get HTML, wait and retry
+        if 'text/html' in response.headers.get('content-type', ''):
+            print("Received HTML response, waiting 10 seconds and retrying...")
+            time.sleep(10)
+            response = requests.get(url)
+            print(f"Retry response status code: {response.status_code}")
+            print(f"Retry response headers: {response.headers}")
+        
+        response.raise_for_status()
         
         # Check if response is empty or not valid JSON
         if not response.text.strip():
             print("Error: Empty response from API")
             return
+            
+        print(f"Response text preview: {response.text[:200]}...")
             
         try:
             data = response.json()
@@ -22,6 +43,8 @@ def generate_tld_query(tld_count=50):
         if not data:
             print("Error: No data returned from API")
             return
+            
+        print(f"Parsed JSON data: {json.dumps(data, indent=2)[:200]}...")
             
         tlds = [item["domain"].split(".")[-1] for item in data]
         
