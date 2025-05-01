@@ -4,6 +4,12 @@ on:
   schedule:
     - cron: '0 0 * * *'
   workflow_dispatch:
+    inputs:
+      tld_count:
+        description: 'Number of TLDs to include in the query'
+        required: true
+        default: '50'
+        type: string
 
 jobs:
   save-tld-query:
@@ -26,9 +32,11 @@ jobs:
       run: |
         echo 'import requests
 import json
+import sys
 from datetime import datetime
 
-response = requests.get("https://isc.sans.edu/api/domaintop/50?json")
+tld_count = int(sys.argv[1]) if len(sys.argv) > 1 else 50
+response = requests.get(f"https://isc.sans.edu/api/domaintop/{tld_count}?json")
 data = response.json()
 tlds = [item["domain"].split(".")[-1] for item in data]
 query = f"""EmailEvents
@@ -44,7 +52,7 @@ output = {
 
 with open("tld_query.json", "w") as f:
     json.dump(output, f, indent=2)' > generate_query.py
-        python generate_query.py
+        python generate_query.py ${{ github.event.inputs.tld_count }}
         
     - name: Commit and push if changed
       run: |
