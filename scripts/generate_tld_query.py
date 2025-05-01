@@ -3,28 +3,39 @@ import json
 import sys
 import time
 from datetime import datetime
+from collections import Counter
 
 def generate_tld_query(tld_count=50):
     try:
-        url = f"https://isc.sans.edu/api/domaintop/{tld_count}?json"
+        url = "https://isc.sans.edu/api/recentdomains?json"
         print(f"Making request to: {url}")
         
-        # Add a delay before the first request
-        print("Waiting 5 seconds before making request...")
-        time.sleep(5)
+        # Add a longer initial delay
+        print("Waiting 15 seconds before making request...")
+        time.sleep(15)
         
-        response = requests.get(url)
-        print(f"Response status code: {response.status_code}")
-        print(f"Response headers: {response.headers}")
+        max_retries = 3
+        retry_count = 0
         
-        # If we get HTML, wait and retry
-        if 'text/html' in response.headers.get('content-type', ''):
-            print("Received HTML response, waiting 10 seconds and retrying...")
-            time.sleep(10)
+        while retry_count < max_retries:
             response = requests.get(url)
-            print(f"Retry response status code: {response.status_code}")
-            print(f"Retry response headers: {response.headers}")
+            print(f"Response status code: {response.status_code}")
+            print(f"Response headers: {response.headers}")
+            
+            # Check if we got JSON
+            if 'application/json' in response.headers.get('content-type', ''):
+                break
+                
+            # If we got HTML, wait longer and retry
+            print(f"Received non-JSON response (attempt {retry_count + 1}/{max_retries})")
+            print("Waiting 20 seconds before retrying...")
+            time.sleep(20)
+            retry_count += 1
         
+        if retry_count == max_retries:
+            print("Max retries reached. Could not get JSON response.")
+            return
+            
         response.raise_for_status()
         
         # Check if response is empty or not valid JSON
@@ -44,12 +55,15 @@ def generate_tld_query(tld_count=50):
             print("Error: No data returned from API")
             return
             
-        print(f"Parsed JSON data: {json.dumps(data, indent=2)[:200]}...")
-            
-        tlds = [item["domain"].split(".")[-1] for item in data]
+        # Extract TLDs and count their occurrences
+        tlds = [domain["domainname"].split(".")[-1] for domain in data if domain["domainname"]]
+        tld_counts = Counter(tlds)
+        
+        # Get top N TLDs
+        top_tlds = [tld for tld, _ in tld_counts.most_common(tld_count)]
         
         query = f"""EmailEvents
-| where RecipientEmailAddress endswith ({' or '.join(f'"{tld}"' for tld in tlds)})
+| where RecipientEmailAddress endswith ({' or '.join(f'"{tld}"' for tld in top_tlds)})
 | summarize count() by RecipientEmailAddress, SenderFromAddress, Subject
 | order by count_ desc"""
 
