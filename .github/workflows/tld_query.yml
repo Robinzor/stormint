@@ -11,17 +11,17 @@ on:
         default: '50'
         type: string
 
-permissions:
-  contents: write
-
 jobs:
   generate-query:
     runs-on: ubuntu-latest
-    
+    permissions:
+      contents: write
+      pull-requests: write
+
     steps:
     - uses: actions/checkout@v3
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
     
     - name: Set up Python
       uses: actions/setup-python@v4
