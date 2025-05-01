@@ -328,7 +328,7 @@
         function generateDefenderQuery() {
             const tlds = Array.from(document.querySelectorAll('.tld-badge')).map(badge => {
                 return badge.textContent.trim().split(' ')[0].substring(1); // Remove the dot and get just the TLD
-            });
+            }).filter(tld => !['com', 'net', 'org'].includes(tld));
             
             const query = `EmailEvents
 | where RecipientEmailAddress endswith (${tlds.map(tld => `".${tld}"`).join(' or ')})
@@ -347,6 +347,25 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">Excluded TLDs:</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="excludeCom" checked>
+                                    <label class="form-check-label" for="excludeCom">.com</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="excludeNet" checked>
+                                    <label class="form-check-label" for="excludeNet">.net</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="excludeOrg" checked>
+                                    <label class="form-check-label" for="excludeOrg">.org</label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="manualTlds" class="form-label">Additional TLDs to include (comma-separated):</label>
+                                <input type="text" class="form-control" id="manualTlds" placeholder="e.g., xyz, online, shop">
+                            </div>
                             <pre class="bg-light p-3 rounded"><code>${query}</code></pre>
                             <button class="btn btn-primary" onclick="copyQuery()">Copy Query</button>
                         </div>
