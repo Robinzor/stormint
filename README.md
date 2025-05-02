@@ -12,7 +12,7 @@ Both queries exclude common legitimate TLDs (.com, .net, .org, .nl) to focus on 
 
 ## Screenshot
 
-![StormInt Dashboard](static/screenshot.png)
+![StormInt Dashboard](src/static/screenshot.png)
 
 ## Update Frequency
 The TLD data is automatically updated every 3 hours using the DShield API. This ensures that the generated threat hunting queries are based on the most recent threat intelligence.
