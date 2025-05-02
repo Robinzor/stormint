@@ -1,0 +1,4 @@
+EmailEvents
+| where RecipientEmailAddress endswith ("com" or "top" or "info" or "shop" or "org" or "life" or "icu" or "net" or "online" or "vip" or "xyz" or "store" or "sbs" or "site" or "cfd" or "pro" or "click" or "bond" or "cyou" or "app" or "live" or "space" or "blog" or "world" or "website" or "fun" or "cloud" or "one" or "tech" or "club" or "biz" or "dev" or "art" or "win" or "buzz" or "loan" or "lol" or "mobi" or "asia" or "quest" or "work" or "bet" or "email" or "lifestyle" or "digital" or "zone" or "link" or "lat" or "ink" or "help")
+| summarize count() by RecipientEmailAddress, SenderFromAddress, Subject
+| order by count_ desc
