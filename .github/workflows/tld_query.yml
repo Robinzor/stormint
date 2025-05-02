@@ -33,5 +33,5 @@ jobs:
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add generated/stormint_url_tld_query.kql generated/stormint_sender_tld_query.kql
-        git commit -m "Update TLD queries [skip ci]" || exit 0
+        git commit -m "Update TLD queries" || exit 0
         git push 
