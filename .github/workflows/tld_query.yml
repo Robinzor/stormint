@@ -3,7 +3,7 @@ name: Generate TLD Queries
 on:
   schedule:
     - cron: '0 */3 * * *'  # Run every 3 hours
-  workflow_dispatch:  # Allow manual triggering
+  workflow_dispatch:  # Allow manual runs
 
 jobs:
   generate-queries:
@@ -13,26 +13,25 @@ jobs:
     
     steps:
     - uses: actions/checkout@v3
-    
+      
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.10'
-    
+        
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install requests
-    
+        pip install -r requirements.txt
+        
     - name: Generate TLD Queries
-      run: python scripts/generate_tld_query.py 50
-    
-    - name: Configure Git
+      run: |
+        python src/scripts/generate_tld_query.py
+        
+    - name: Commit changes
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-    
-    - name: Commit and push if changed
-      run: |
-        git add stormint_url_tld_query.kql stormint_sender_tld_query.kql
-        git diff --quiet && git diff --staged --quiet || (git commit -m "Update TLD queries [skip ci]" && git push) 
+        git add generated/stormint_url_tld_query.kql generated/stormint_sender_tld_query.kql
+        git commit -m "Update TLD queries [skip ci]" || exit 0
+        git push 
