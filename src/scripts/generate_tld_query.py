@@ -155,11 +155,16 @@ def generate_tld_query(tlds: List[str]) -> str:
 // Last updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 
 let suspicious_tlds = dynamic({json.dumps(tlds)});
-EmailEvents
-| where EmailUrl has_any (suspicious_tlds)
-| where EmailUrl matches regex @'https?://[^/]+\.(?:{"|".join(tlds)})(?:/|$)'
-| project TimeGenerated, Subject, SenderFromAddress, RecipientEmailAddress, EmailUrl
-| summarize count() by Subject, SenderFromAddress, RecipientEmailAddress, EmailUrl
+EmailUrlInfo
+| where Url has_any (suspicious_tlds)
+| where Url matches regex @'https?://[^/]+\.(?:{"|".join(tlds)})(?:/|$)'
+| project TimeGenerated, NetworkMessageId, Url
+| join kind=inner (
+    EmailEvents
+    | project TimeGenerated, NetworkMessageId, Subject, SenderFromAddress, RecipientEmailAddress
+) on NetworkMessageId
+| project TimeGenerated, Subject, SenderFromAddress, RecipientEmailAddress, Url
+| summarize count() by Subject, SenderFromAddress, RecipientEmailAddress, Url
 | order by count_ desc
 """
     return query
