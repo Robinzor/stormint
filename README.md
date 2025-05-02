@@ -20,20 +20,21 @@ The TLD data is automatically updated every 3 hours using the DShield API. This 
 ## Legal Notice
 
 ### Data Source Attribution
-This project uses data from the SANS Internet Storm Center / DShield API, which is licensed under the [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License](https://creativecommons.org/licenses/by-nc-sa/4.0/).
+This project uses data from the SANS Internet Storm Center / DShield API, which is provided "as-is" on a "best-effort" basis.
 
 ### Usage Terms
 - This project is for educational, research, and network protection purposes
 - The generated threat hunting queries are not guaranteed to be accurate or complete
-- The API is provided "as-is" on a "best-effort" basis
 - Do not build mission-critical applications around this data
 - Do not resell or commercially redistribute the data
 - Always validate queries in your own environment before deployment
 - In case of API rate limiting (429 responses), respect the "Retry-After" header
+- Consider contributing data by running a honeypot
+- Please let SANS know how you use the data
 - For complete API usage terms, see [DShield API Documentation](https://www.dshield.org/api/)
 
 ### Commercial Use
-While the data is licensed under CC BY-NC-SA 4.0, the API terms explicitly allow:
+The API terms explicitly allow:
 - Using the data for commercial purposes to protect your own company's network
 - Building security tools and threat hunting queries for internal use
 - Implementing network protection measures based on the data
@@ -46,6 +47,9 @@ This project uses a custom User-Agent for API requests:
 ```
 StormInt
 ```
+
+## Contact
+For API-related issues, contact SANS at jullrich - at - sans.edu
 
 ## License
 This project is licensed under the [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License](https://creativecommons.org/licenses/by-nc-sa/4.0/) - see the [LICENSE](LICENSE) file for details. 
