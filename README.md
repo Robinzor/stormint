@@ -2,9 +2,13 @@
 
 This project generates Microsoft Defender queries based on TLD (Top-Level Domain) data from the SANS Internet Storm Center / DShield API.
 
-## Generated Query
-The latest TLD query is automatically generated every 3 hours using a GitHub workflow that parses the DShield API:
-[Latest TLD Query](tld_query.txt)
+## Generated Queries
+The latest TLD queries are automatically generated every 3 hours using a GitHub workflow that parses the DShield API:
+
+1. [URL TLD Query](stormint_url_tld_query.kql) - Monitors suspicious TLDs in email links
+2. [Sender TLD Query](stormint_sender_tld_query.kql) - Monitors suspicious TLDs in sender domains
+
+Both queries exclude common legitimate TLDs (.com, .net, .org, .nl) to focus on potentially malicious domains.
 
 ## Screenshot
 
