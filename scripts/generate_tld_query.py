@@ -80,10 +80,10 @@ def generate_tld_query(tld_count=50):
 // License: CC BY-NC-SA 4.0
 // Note: Common legitimate TLDs (.com, .net, .org, etc.) are excluded
 
-let top_tlds = dynamic([{', '.join(f'"{tld}"' for tld in top_tlds)}]);
+let top_tlds = dynamic([{', '.join(f'".{tld}"' for tld in top_tlds)}]);
 EmailUrlInfo
 | where EmailDirection == "Inbound"
-| where Url has_any(top_tlds) or Url matches regex @"https?://[^/]+\\.({'|'.join(top_tlds)})[/?]"
+| where Url has_any(top_tlds)
 | project Url, NetworkMessageId
 | join kind=inner (
     EmailEvents
@@ -109,11 +109,10 @@ EmailUrlInfo
 // License: CC BY-NC-SA 4.0
 // Note: Common legitimate TLDs (.com, .net, .org, etc.) are excluded
 
-let top_tlds = dynamic([{', '.join(f'"{tld}"' for tld in top_tlds)}]);
+let top_tlds = dynamic([{', '.join(f'".{tld}"' for tld in top_tlds)}]);
 EmailEvents
 | where EmailDirection == "Inbound"
-| where SenderFromDomain has_any(top_tlds) 
-    or SenderFromAddress matches regex @".*@[^@]+\\.({'|'.join(top_tlds)})$"
+| where SenderFromDomain has_any(top_tlds)
 | project 
     TimeGenerated,
     Subject,
