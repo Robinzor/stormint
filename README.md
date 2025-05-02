@@ -44,7 +44,7 @@ This project is not affiliated with or endorsed by SANS Institute or the Interne
 ## User-Agent Information
 This project uses a custom User-Agent for API requests:
 ```
-Robinzor.nl
+StormInt
 ```
 
 ## License

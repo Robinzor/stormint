@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from collections import Counter
 from functools import lru_cache
 import time
+import json
 
 app = Flask(__name__)
 
@@ -131,6 +132,79 @@ def get_pagination_range(current_page, total_pages, window=5):
     
     return range(start, end + 1)
 
+def get_tld_data():
+    try:
+        # Common legitimate TLDs to exclude
+        blacklisted_tlds = {
+            'com', 'net', 'org', 'nl'
+        }
+        
+        url = "https://isc.sans.edu/api/recentdomains?json"
+        print(f"[INFO] Making request to: {url}")
+        
+        print("[INFO] Waiting 15 seconds before making request...")
+        time.sleep(15)
+        
+        max_retries = 3
+        retry_count = 0
+        
+        headers = {
+            'User-Agent': 'StormInt',
+            'Accept': 'application/json',
+            'Accept-Language': 'en-US,en;q=0.9'
+        }
+        
+        while retry_count < max_retries:
+            start_time = time.time()
+            response = requests.get(url, headers=headers)
+            elapsed_time = time.time() - start_time
+            
+            print(f"[DEBUG] Status code: {response.status_code}")
+            print(f"[DEBUG] Headers: {dict(response.headers)}")
+            print(f"[DEBUG] Request duration: {elapsed_time:.2f} seconds")
+            
+            try:
+                if elapsed_time < 10:
+                    wait_time = 10 - elapsed_time
+                    print(f"[INFO] Waiting extra {wait_time:.2f} seconds to avoid rate limiting...")
+                    time.sleep(wait_time)
+                
+                data = response.json()
+                if data:
+                    print("[INFO] Successfully parsed JSON response.")
+                    break
+                else:
+                    print("[WARN] Empty JSON response.")
+            except json.JSONDecodeError:
+                print(f"[ERROR] Failed to parse JSON (attempt {retry_count + 1}/{max_retries})")
+                print(f"[DEBUG] Response preview: {response.text[:200]}...")
+                print("[INFO] Retrying after 20 seconds...")
+                time.sleep(20)
+                retry_count += 1
+                continue
+        
+        if retry_count == max_retries:
+            print("[FATAL] Max retries reached. Exiting.")
+            return None
+            
+        # Extract and count TLDs, excluding blacklisted ones
+        tlds = [
+            domain["domainname"].rsplit(".", 1)[-1]
+            for domain in data if domain.get("domainname") and "." in domain["domainname"]
+            and domain["domainname"].rsplit(".", 1)[-1] not in blacklisted_tlds
+        ]
+        tld_counts = Counter(tlds)
+        top_tlds = [{"tld": tld, "count": count} for tld, count in tld_counts.most_common(50)]
+        
+        return top_tlds
+        
+    except requests.exceptions.RequestException as e:
+        print(f"[ERROR] Request failed: {e}")
+        return None
+    except Exception as e:
+        print(f"[ERROR] Unexpected error: {e}")
+        return None
+
 @app.route('/')
 def index():
     page = request.args.get('page', 1, type=int)
@@ -255,6 +329,14 @@ def search():
         template_args['firstseen'] = firstseen_filter
     
     return render_template('index.html', **template_args)
+
+@app.route('/api/tlds')
+def get_tlds():
+    tld_data = get_tld_data()
+    if tld_data:
+        return jsonify(tld_data)
+    else:
+        return jsonify({"error": "Failed to fetch TLD data"}), 500
 
 if __name__ == '__main__':
     app.run(debug=True) 

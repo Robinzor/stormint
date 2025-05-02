@@ -1,45 +1,36 @@
-name: TLD Query Generator
+name: Generate TLD Queries
 
 on:
   schedule:
-    - cron: '0 */3 * * *'
-  workflow_dispatch:
-    inputs:
-      tld_count:
-        description: 'Number of TLDs to include in the query'
-        required: true
-        default: '50'
-        type: string
+    - cron: '0 */3 * * *'  # Run every 3 hours
+  workflow_dispatch:  # Allow manual triggering
 
 jobs:
-  generate-query:
+  generate-queries:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-
+    
     steps:
     - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
     
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.10'
-        
+    
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install requests
-        
-    - name: Generate Query
-      run: |
-        python scripts/generate_tld_query.py ${{ github.event.inputs.tld_count }}
-        
-    - name: Commit and push if changed
+    
+    - name: Generate TLD Queries
+      run: python scripts/generate_tld_query.py 50
+    
+    - name: Configure Git
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add tld_query.txt
-        git diff --quiet && git diff --staged --quiet || (git commit -m "Update TLD query" && git push) 
+    
+    - name: Commit and push if changed
+      run: |
+        git add stormint_url_tld_query.kql stormint_sender_tld_query.kql
+        git diff --quiet && git diff --staged --quiet || (git commit -m "Update TLD queries [skip ci]" && git push) 
