@@ -10,6 +10,10 @@ The latest threat hunting queries are automatically generated every 3 hours usin
 
 Both queries exclude common legitimate TLDs (.com, .net, .org, .nl) to focus on potentially malicious domains that may indicate phishing, malware distribution, or other security threats.
 
+## Screenshot
+
+![StormInt Dashboard](static/screenshot.png)
+
 ## Update Frequency
 The TLD data is automatically updated every 3 hours using the DShield API. This ensures that the generated threat hunting queries are based on the most recent threat intelligence.
 
