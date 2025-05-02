@@ -2,37 +2,13 @@
 
 This project generates Microsoft Defender threat hunting queries based on TLD (Top-Level Domain) data from the SANS Internet Storm Center / DShield API. These queries help security teams identify potentially malicious domains in their email traffic.
 
-## Project Structure
-```
-.
-├── README.md                 # Project documentation
-├── docs/                     # Additional documentation
-│   ├── LICENSE.md           # License information
-│   ├── CONTRIBUTING.md      # Contribution guidelines
-│   └── SECURITY.md          # Security policy
-├── src/                     # Source code
-│   ├── app.py              # Web application
-│   ├── scripts/            # Python scripts
-│   ├── templates/          # HTML templates
-│   └── static/             # Static assets
-├── generated/              # Generated KQL queries
-│   ├── stormint_url_tld_query.kql
-│   └── stormint_sender_tld_query.kql
-├── requirements.txt        # Python dependencies
-└── .github/               # GitHub configuration
-```
-
 ## Generated Queries
 The latest threat hunting queries are automatically generated every 3 hours using a GitHub workflow that parses the DShield API:
 
-1. [URL TLD Query](generated/stormint_url_tld_query.kql) - Hunts for suspicious TLDs in email links
-2. [Sender TLD Query](generated/stormint_sender_tld_query.kql) - Hunts for suspicious TLDs in sender domains
+1. [URL TLD Query](queries/stormint_url_tld_query.kql) - Hunts for suspicious TLDs in email links
+2. [Sender TLD Query](queries/stormint_sender_tld_query.kql) - Hunts for suspicious TLDs in sender domains
 
 Both queries exclude common legitimate TLDs (.com, .net, .org, .nl) to focus on potentially malicious domains that may indicate phishing, malware distribution, or other security threats.
-
-## Screenshot
-
-![StormInt Dashboard](src/static/screenshot.png)
 
 ## Update Frequency
 The TLD data is automatically updated every 3 hours using the DShield API. This ensures that the generated threat hunting queries are based on the most recent threat intelligence.
@@ -69,4 +45,4 @@ StormInt
 ```
 
 ## License
-This project is licensed under the [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License](https://creativecommons.org/licenses/by-nc-sa/4.0/) - see the [LICENSE](docs/LICENSE.md) file for details. 
+This project is licensed under the [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License](https://creativecommons.org/licenses/by-nc-sa/4.0/) - see the [LICENSE](LICENSE.md) file for details. 
