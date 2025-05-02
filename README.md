@@ -48,8 +48,5 @@ This project uses a custom User-Agent for API requests:
 StormInt
 ```
 
-## Contact
-For API-related issues, contact SANS at jullrich - at - sans.edu
-
 ## License
 This project is licensed under the [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License](https://creativecommons.org/licenses/by-nc-sa/4.0/) - see the [LICENSE](LICENSE) file for details. 
