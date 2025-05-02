@@ -2,6 +2,10 @@
 
 This project generates Microsoft Defender queries based on TLD (Top-Level Domain) data from the SANS Internet Storm Center / DShield API.
 
+## Generated Query
+The latest TLD query is automatically generated every 3 hours using a GitHub workflow that parses the DShield API:
+[Latest TLD Query](tld_query.txt)
+
 ## Screenshot
 
 ![StormInt Dashboard](static/screenshot.png)
@@ -22,6 +26,7 @@ This project uses data from the SANS Internet Storm Center / DShield API, which 
 - Do not resell or commercially redistribute the data
 - Always validate queries in your own environment before deployment
 - In case of API rate limiting (429 responses), respect the "Retry-After" header
+- For complete API usage terms, see [DShield API Documentation](https://www.dshield.org/api/)
 
 ### Commercial Use
 While the data is licensed under CC BY-NC-SA 4.0, the API terms explicitly allow:
