@@ -1,6 +1,13 @@
-# TLD Query Generator
+# StormInt TLD Query Generator
 
 This project generates Microsoft Defender queries based on TLD (Top-Level Domain) data from the SANS Internet Storm Center / DShield API.
+
+## Screenshot
+
+![StormInt Dashboard](static/screenshot.png)
+
+## Update Frequency
+The TLD data is automatically updated every 3 hours using the DShield API. This ensures that the generated queries are based on the most recent threat intelligence.
 
 ## Legal Notice
 
@@ -28,7 +35,7 @@ This project is not affiliated with or endorsed by SANS Institute or the Interne
 ## User-Agent Information
 This project uses a custom User-Agent for API requests:
 ```
-TLDQueryGenerator/1.0 (GitHub: Robinzor)
+Robinzor.nl
 ```
 
 ## License
