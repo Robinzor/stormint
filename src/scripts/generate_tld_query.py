@@ -107,7 +107,6 @@ def generate_url_tld_query(tlds: List[str]) -> str:
 let suspicious_tlds = dynamic({json.dumps(tlds)});
 EmailUrlInfo
 | where Url has_any (suspicious_tlds)
-| where Url matches regex @'https?://[^/]+\.(?:{"|".join(tlds)})(?:/|$)'
 | project TimeGenerated, NetworkMessageId, Url
 | join kind=inner (
     EmailEvents
@@ -132,7 +131,6 @@ def generate_sender_tld_query(tlds: List[str]) -> str:
 let suspicious_tlds = dynamic({json.dumps(tlds)});
 EmailEvents
 | where SenderFromDomain has_any (suspicious_tlds)
-    or SenderFromAddress matches regex @'@[^@]+\.(?:{"|".join(tlds)})$'
 | project TimeGenerated, Subject, SenderFromAddress, RecipientEmailAddress, SenderFromDomain
 | summarize count() by Subject, SenderFromAddress, RecipientEmailAddress, SenderFromDomain
 | order by count_ desc
