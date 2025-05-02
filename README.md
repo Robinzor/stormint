@@ -5,8 +5,8 @@ This project generates Microsoft Defender threat hunting queries based on TLD (T
 ## Generated Queries
 The latest threat hunting queries are automatically generated every 3 hours using a GitHub workflow that parses the DShield API:
 
-1. [URL TLD Query](queries/stormint_url_tld_query.kql) - Hunts for suspicious TLDs in email links
-2. [Sender TLD Query](queries/stormint_sender_tld_query.kql) - Hunts for suspicious TLDs in sender domains
+1. [URL TLD Query](generated/stormint_url_tld_query.kql) - Hunts for suspicious TLDs in email links
+2. [Sender TLD Query](generated/stormint_sender_tld_query.kql) - Hunts for suspicious TLDs in sender domains
 
 Both queries exclude common legitimate TLDs (.com, .net, .org, .nl) to focus on potentially malicious domains that may indicate phishing, malware distribution, or other security threats.
 
